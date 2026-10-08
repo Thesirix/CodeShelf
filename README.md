@@ -108,13 +108,13 @@ Steps:
 
 ### Your inventory in 5 steps
 
-| Step | Action                                                                                  | Who        |
-| ---- | --------------------------------------------------------------------------------------- | ---------- |
-| 1    | List the folders where your projects live (every drive, every backup)                   | you        |
-| 2    | Give Claude the prompt, the folders and your GitHub username                            | you        |
-| 3    | Claude scans, opens ambiguous files, merges versions, rates effort, fetches GitHub      | Claude     |
-| 4    | Claude rewrites the data table and opens the dashboard                                  | Claude     |
-| 5    | Review: fix a description, merge two rows, adjust a star. Ask Claude or edit by hand    | you        |
+| Step | Action                                                                               | Who    |
+| ---- | ------------------------------------------------------------------------------------ | ------ |
+| 1    | List the folders where your projects live (every drive, every backup)                | you    |
+| 2    | Give Claude the prompt, the folders and your GitHub username                         | you    |
+| 3    | Claude scans, opens ambiguous files, merges versions, rates effort, fetches GitHub   | Claude |
+| 4    | Claude rewrites the data table and opens the dashboard                               | Claude |
+| 5    | Review: fix a description, merge two rows, adjust a star. Ask Claude or edit by hand | you    |
 
 > Tip: tell Claude what a project **means** to you when its folder name is cryptic (`proj_final2`, `test3`…). The more context it has, the better the descriptions and the merges.
 
@@ -124,13 +124,13 @@ Steps:
 
 The 6th field of each row is the **amount of work needed to build the project**. Here is the scale Claude uses, and the one to use when you correct it:
 
-| Stars        | Level         | Typical size                     | Examples                                                         |
-| ------------ | ------------- | -------------------------------- | ---------------------------------------------------------------- |
-| ★☆☆☆☆        | Script        | a few lines to an afternoon      | a file renamer, a terminal Snake, an exercise                    |
-| ★★☆☆☆        | Small tool    | a weekend, one main feature      | a URL shortener, a price watcher, a pixel art editor             |
-| ★★★☆☆        | Real project  | weeks, several features          | a blog engine, a Discord bot, a mobile app with a few screens    |
-| ★★★★☆        | Big project   | months, several parts (front, back, data, model) | a 2D game with an editor, a RAG chatbot, a trained classifier |
-| ★★★★★        | Major build   | long-term, product-like, or professional | a SaaS with auth and billing, an e-commerce, a work or school capstone |
+| Stars | Level        | Typical size                                     | Examples                                                               |
+| ----- | ------------ | ------------------------------------------------ | ---------------------------------------------------------------------- |
+| ★☆☆☆☆ | Script       | a few lines to an afternoon                      | a file renamer, a terminal Snake, an exercise                          |
+| ★★☆☆☆ | Small tool   | a weekend, one main feature                      | a URL shortener, a price watcher, a pixel art editor                   |
+| ★★★☆☆ | Real project | weeks, several features                          | a blog engine, a Discord bot, a mobile app with a few screens          |
+| ★★★★☆ | Big project  | months, several parts (front, back, data, model) | a 2D game with an editor, a RAG chatbot, a trained classifier          |
+| ★★★★★ | Major build  | long-term, product-like, or professional         | a SaaS with auth and billing, an e-commerce, a work or school capstone |
 
 The stars feed the **"Big effort (★4-5)"** card and **weight the radar**: a 5-star project counts five times more than a 1-star script in your developer profile.
 
@@ -144,14 +144,14 @@ The stars feed the **"Big effort (★4-5)"** card and **weight the radar**: a 5-
 
 ### Stat cards
 
-| Card                      | Meaning                                                                 |
-| ------------------------- | ----------------------------------------------------------------------- |
-| **Distinct ideas**        | number of rows, after merging versions                                  |
-| **Categories**            | number of different domains you touched                                 |
-| **Languages**             | number of different languages and frameworks used                       |
-| **Ideas on GitHub**       | rows marked as published (not the number of repos)                      |
-| **⭐ GitHub stars (total)** | sum of the stars across your repos                                     |
-| **Big effort (★4-5)**     | how many serious projects you carried                                    |
+| Card                        | Meaning                                            |
+| --------------------------- | -------------------------------------------------- |
+| **Distinct ideas**          | number of rows, after merging versions             |
+| **Categories**              | number of different domains you touched            |
+| **Languages**               | number of different languages and frameworks used  |
+| **Ideas on GitHub**         | rows marked as published (not the number of repos) |
+| **⭐ GitHub stars (total)** | sum of the stars across your repos                 |
+| **Big effort (★4-5)**       | how many serious projects you carried              |
 
 ### Charts
 
@@ -160,15 +160,15 @@ The stars feed the **"Big effort (★4-5)"** card and **weight the radar**: a 5-
 
 ### The table
 
-| Column             | Content                                                              |
-| ------------------ | -------------------------------------------------------------------- |
-| **Idea**           | the name of the project                                              |
-| **Category**       | one or more colored chips with an emoji                              |
-| **Language**       | one or more chips: a full-stack project shows up in every filter     |
-| **What it does**   | one-line description                                                 |
-| **Where it lives** | local folders, the version lineage, and a ⭐ GitHub marker            |
-| **Date**           | last meaningful activity (`YYYY-MM-DD`)                              |
-| **Effort**         | 1 to 5 stars                                                         |
+| Column             | Content                                                          |
+| ------------------ | ---------------------------------------------------------------- |
+| **Idea**           | the name of the project                                          |
+| **Category**       | one or more colored chips with an emoji                          |
+| **Language**       | one or more chips: a full-stack project shows up in every filter |
+| **What it does**   | one-line description                                             |
+| **Where it lives** | local folders, the version lineage, and a ⭐ GitHub marker       |
+| **Date**           | last meaningful activity (`YYYY-MM-DD`)                          |
+| **Effort**         | 1 to 5 stars                                                     |
 
 - Click any header (or **A→Z**, **Date ↓**, **Effort ↓**) to sort. Click again to reverse.
 - The **search box** filters on every field (try `github`, `flask`, `v2`…).
@@ -197,10 +197,24 @@ const G = "GH"; // GitHub marker
 
 const P = [
   // [idea, categories, description, where it lives, date, effort, languages]
-  ["Backtester", "Trading", "Strategy backtesting engine (proto -> v2 -> final)",
-   G + " · local/bt v1 -> v2 -> v3", "2024-12-01", 5, "Python"],
-  ["Fitness Tracker", "Mobile, Santé", "Workout and nutrition tracking app",
-   G + " · local/fittrack", "2024-07-08", 4, "Flutter"],
+  [
+    "Backtester",
+    "Trading",
+    "Strategy backtesting engine (proto -> v2 -> final)",
+    G + " · local/bt v1 -> v2 -> v3",
+    "2024-12-01",
+    5,
+    "Python",
+  ],
+  [
+    "Fitness Tracker",
+    "Mobile, Santé",
+    "Workout and nutrition tracking app",
+    G + " · local/fittrack",
+    "2024-07-08",
+    4,
+    "Flutter",
+  ],
 ];
 
 const GHSTARS = 128; // total stars across your GitHub repos
@@ -247,9 +261,18 @@ Unknown languages still work: they get a neutral grey chip.
 ### Change the radar axes
 
 ```js
-const AXES = [["Web"], ["Jeux"], ["Trading"], ["IA/ML"], ["Audio"],
-              ["3D"], ["Image"], ["Mobile"], ["Outils"],
-              ["Scraping", "Hacking", "Divers"]]; // grouped axis = "Scripts/Hack"
+const AXES = [
+  ["Web"],
+  ["Jeux"],
+  ["Trading"],
+  ["IA/ML"],
+  ["Audio"],
+  ["3D"],
+  ["Image"],
+  ["Mobile"],
+  ["Outils"],
+  ["Scraping", "Hacking", "Divers"],
+]; // grouped axis = "Scripts/Hack"
 ```
 
 Each entry is one axis. Several keys in one entry are summed into a single axis.
@@ -258,10 +281,10 @@ Each entry is one axis. Several keys in one entry are summed into a single axis.
 
 ```css
 :root {
-  --bg: #0f1116;     /* page background */
-  --panel: #171a21;  /* cards and charts */
+  --bg: #0f1116; /* page background */
+  --panel: #171a21; /* cards and charts */
   --accent: #6ea8ff; /* links, active buttons, radar */
-  --star: #ffcf5c;   /* effort stars and GitHub marker */
+  --star: #ffcf5c; /* effort stars and GitHub marker */
 }
 ```
 
@@ -310,4 +333,3 @@ Open an issue or a pull request. Keep the spirit: **one file, no dependencies, f
 ## License
 
 MIT. Do whatever you want, a star is always appreciated ⭐
-# CodeShelf
