@@ -1,0 +1,8 @@
+# Whitelist: ignore everything, then allow only the files to publish
+*
+!.gitignore
+!index.html
+!README.md
+!LICENSE
+!topinv.png
+!botinv.png

@@ -1,0 +1,1250 @@
+<!doctype html>
+<html lang="en">
+  <!--
+=====================================================================================
+  INSTRUCTIONS FOR CLAUDE  (Claude: read this whole block before acting)
+  INSTRUCTIONS POUR CLAUDE (version francaise plus bas)
+=====================================================================================
+[EN]
+This file is a TEMPLATE for a "my coding projects inventory" dashboard (bilingual EN/FR UI).
+Your job: replace the example `const P = [...]` table with the person's REAL projects,
+without changing anything else (CSS, JS, structure, i18n).
+- Ask for their local project folders and (optional) GitHub username.
+- Scan locally (marker files: package.json, index.html, main.py, manage.py, pubspec.yaml,
+  composer.json, go.mod, Cargo.toml). Read a file when a name is ambiguous.
+- Fetch GitHub repos via https://api.github.com/users/USERNAME/repos?per_page=100 and sum
+  the stars for the GHSTARS variable.
+- ONE IDEA = ONE ROW. Merge variants/versions into a single row; show the lineage in the
+  "where" column with arrows (proto -> v2 -> final). Include everything, even tiny scripts.
+- Category AND language can be MULTIPLE (comma-separated). Mark published projects with the
+  marker added by G (the string stored in the G constant) in the "where" field.
+- Stars (6th field, 1-5) = the amount of WORK to build it, not quality.
+- Categories MUST be one of the internal keys (they get auto-translated by the UI):
+  Trading, Santé, Jeux, Audio, 3D, Image, Web, Mobile, IA/ML, Scraping, Outils, Hacking,
+  Social, Cours, Divers. (Keep these keys even for an English user; the UI translates them.)
+- NEVER use em dashes (U+2014) or en dashes (U+2013); keyboard characters only.
+- Row format (keep field order):
+  ["Idea name","Cat1, Cat2","What it does","where it lives (+ GitHub marker)","YYYY-MM-DD",effort,"Lang1, Lang2"],
+- Update GHSTARS and the date in the subtitle text, then save and open in a browser.
+
+[FR]
+Ce fichier est un TEMPLATE de dashboard "inventaire de mes projets" (interface bilingue EN/FR).
+Ton travail: remplacer le tableau d'exemple `const P = [...]` par les VRAIS projets de la
+personne, sans rien changer d'autre (CSS, JS, structure, i18n). Memes regles que ci-dessus:
+1 idee = 1 ligne, fusionne les variantes (gradation avec des fleches proto -> v2 -> final),
+categorie et langage multiples (virgules), etoiles 1-5 = charge de travail, marque GitHub via
+la constante G, categories = cles internes ci-dessus (l'UI les traduit), AUCUN tiret cadratin.
+=====================================================================================
+-->
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CodeShelf</title>
+    <style>
+      :root {
+        --bg: #0f1116;
+        --panel: #171a21;
+        --panel2: #1e222b;
+        --line: #2a2f3a;
+        --ink: #e6e9ef;
+        --mut: #9aa3b2;
+        --accent: #6ea8ff;
+        --star: #ffcf5c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          15px/1.5 system-ui,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+        padding: 0 16px 80px;
+      }
+      .wrap {
+        max-width: 1300px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 28px 0 2px;
+        padding-right: 120px;
+      }
+      .sub {
+        color: var(--mut);
+        margin: 0 0 10px;
+        font-size: 14px;
+      }
+      .tplnote {
+        background: #1e222b;
+        border: 1px dashed #3a4151;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin: 14px 0;
+        font-size: 13px;
+        color: #b9c2d0;
+      }
+      .tplnote b {
+        color: var(--accent);
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
+        margin: 14px 0;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      .card .n {
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .card .l {
+        color: var(--mut);
+        font-size: 12px;
+      }
+      .chart {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin: 10px 0;
+      }
+      .chart h3 {
+        margin: 2px 0 10px;
+        font-size: 14px;
+        color: var(--mut);
+        font-weight: 600;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      @media (max-width: 720px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 4px 0;
+      }
+      .bar-row .cap {
+        width: 120px;
+        font-size: 12px;
+        color: var(--mut);
+        text-align: right;
+        flex: none;
+      }
+      .bar-track {
+        flex: 1;
+        background: var(--panel2);
+        border-radius: 5px;
+        overflow: hidden;
+        height: 19px;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #0f1116;
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin: 14px 0 8px;
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        padding: 8px 0;
+        z-index: 5;
+      }
+      input#q {
+        flex: 1;
+        min-width: 160px;
+        padding: 9px 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: 14px;
+      }
+      select {
+        padding: 9px 10px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: 13px;
+      }
+      .btn {
+        padding: 7px 11px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: 12.5px;
+        cursor: pointer;
+      }
+      .btn:hover {
+        border-color: var(--accent);
+      }
+      .btn.on {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 6px 9px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        color: var(--mut);
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+      th:hover {
+        color: var(--accent);
+      }
+      tr:hover td {
+        background: var(--panel2);
+      }
+      .chip {
+        white-space: nowrap;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+        display: inline-block;
+        margin: 1px 2px 1px 0;
+      }
+      .date {
+        color: var(--mut);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .stars {
+        color: var(--star);
+        white-space: nowrap;
+      }
+      .nm {
+        font-weight: 600;
+      }
+      .where {
+        color: var(--mut);
+        font-size: 12px;
+      }
+      .gh {
+        color: var(--star);
+      }
+      .langsw {
+        position: fixed;
+        top: 12px;
+        right: 16px;
+        z-index: 20;
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--panel);
+      }
+      .langsw button {
+        border: 0;
+        background: transparent;
+        color: var(--mut);
+        padding: 6px 11px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .langsw button.on {
+        background: var(--accent);
+        color: #0f1116;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="langsw">
+      <button data-l="en" class="on">
+        <svg
+          width="20"
+          height="14"
+          viewBox="0 0 60 40"
+          style="vertical-align: -2px; border-radius: 2px"
+        >
+          <rect width="60" height="40" fill="#012169" />
+          <path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" stroke-width="8" />
+          <path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" stroke-width="4" />
+          <rect x="25" width="10" height="40" fill="#fff" />
+          <rect y="15" width="60" height="10" fill="#fff" />
+          <rect x="27" width="6" height="40" fill="#C8102E" />
+          <rect y="17" width="60" height="6" fill="#C8102E" />
+        </svg>
+        EN
+      </button>
+      <button data-l="fr">
+        <svg
+          width="20"
+          height="14"
+          viewBox="0 0 3 2"
+          style="vertical-align: -2px; border-radius: 2px"
+        >
+          <rect width="3" height="2" fill="#fff" />
+          <rect width="1" height="2" fill="#0055A4" />
+          <rect x="2" width="1" height="2" fill="#EF4135" />
+        </svg>
+        FR
+      </button>
+    </div>
+    <div class="wrap">
+      <h1 id="t_title"></h1>
+      <p class="sub" id="t_sub"></p>
+
+      <div class="tplnote" id="t_tpl"></div>
+
+      <details class="chart" style="margin-top: 0">
+        <summary
+          id="t_promptsum"
+          style="
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--accent);
+            font-weight: 600;
+          "
+        ></summary>
+        <button
+          class="btn"
+          id="t_copybtn"
+          style="margin: 10px 0"
+          onclick="copyPrompt()"
+        ></button>
+        <pre
+          id="promptBox"
+          style="
+            white-space: pre-wrap;
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12.5px;
+            color: var(--ink);
+            overflow: auto;
+            margin: 0;
+          "
+        ></pre>
+      </details>
+
+      <div class="cards" id="cards"></div>
+
+      <div class="grid2">
+        <div class="chart">
+          <h3 id="t_cath"></h3>
+          <div id="catChart"></div>
+        </div>
+        <div class="chart">
+          <h3 id="t_langh"></h3>
+          <div id="langChart"></div>
+        </div>
+      </div>
+
+      <details class="chart" id="radarBox" open>
+        <summary
+          id="radarTitle"
+          style="
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--mut);
+            font-weight: 600;
+          "
+        ></summary>
+        <div style="display: flex; justify-content: center; margin-top: 10px">
+          <svg id="radar" width="480" height="400" viewBox="0 0 480 400"></svg>
+        </div>
+      </details>
+
+      <div class="toolbar">
+        <input id="q" />
+        <select id="fcat"></select>
+        <select id="flang"></select>
+        <button class="btn" data-k="0" id="t_az"></button>
+        <button class="btn on" data-k="4" id="t_date"></button>
+        <button class="btn" data-k="5" id="t_effort"></button>
+      </div>
+
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th data-k="0" id="t_hidea"></th>
+            <th data-k="1" id="t_hcat"></th>
+            <th data-k="6" id="t_hlang"></th>
+            <th data-k="2" id="t_hwhat"></th>
+            <th data-k="3" id="t_hwhere"></th>
+            <th data-k="4" id="t_hdate"></th>
+            <th data-k="5" id="t_heffort"></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+
+      <p class="sub" id="foot" style="margin-top: 22px"></p>
+    </div>
+
+    <script>
+      const G = "GH";
+      // =====================================================================
+      //  EXAMPLE DATA - Claude: replace this whole array with the person's REAL projects.
+      //  Row format:
+      //  [idea, "Cat1, Cat2", description, "where it lives (+G for GitHub)", "YYYY-MM-DD", effort(1-5), "Lang1, Lang2"]
+      //  Category keys: Trading, Santé, Jeux, Audio, 3D, Image, Web, Mobile, IA/ML, Scraping, Outils, Hacking, Social, Cours, Divers
+      // =====================================================================
+      const P = [
+        [
+          "Portfolio v3",
+          "Web",
+          "Animated portfolio site with a contact form",
+          G + " · local/portfolio v1 -> v2 -> v3",
+          "2024-11-02",
+          3,
+          "React, TypeScript",
+        ],
+        [
+          "SaaS Dashboard",
+          "Web",
+          "Multi-tenant analytics dashboard (auth, Stripe billing)",
+          G + " · local/saas-dash",
+          "2024-09-14",
+          5,
+          "TypeScript, Node, SQL",
+        ],
+        [
+          "E-commerce",
+          "Web",
+          "Online shop (cart, checkout, back-office)",
+          "local/shop",
+          "2024-03-30",
+          5,
+          "React, Node, SQL",
+        ],
+        [
+          "Blog Engine",
+          "Web",
+          "Blog engine with Markdown and comments",
+          G,
+          "2023-06-20",
+          3,
+          "PHP, SQL",
+        ],
+        [
+          "URL Shortener",
+          "Web",
+          "URL shortener with click analytics",
+          G + " · local/shortly",
+          "2023-02-11",
+          2,
+          "Node, SQL",
+        ],
+        [
+          "Fitness Tracker",
+          "Mobile, Santé",
+          "Workout and nutrition tracking app",
+          G + " · local/fittrack",
+          "2024-07-08",
+          4,
+          "Flutter",
+        ],
+        [
+          "Recipe App",
+          "Mobile",
+          "Recipe app with a shopping list",
+          "local/recipes",
+          "2023-10-19",
+          3,
+          "Flutter",
+        ],
+        [
+          "Habit Builder",
+          "Mobile, Santé",
+          "Habit tracking with reminders and streaks",
+          G,
+          "2024-01-25",
+          3,
+          "Flutter, Node",
+        ],
+        [
+          "Platformer 2D",
+          "Jeux",
+          "2D platformer with a level editor",
+          G + " · local/platformer",
+          "2023-12-05",
+          4,
+          "C#",
+        ],
+        [
+          "Roguelike",
+          "Jeux",
+          "Procedurally generated dungeon (proto -> v2)",
+          "local/rogue v1 -> v2",
+          "2024-05-22",
+          4,
+          "Rust",
+        ],
+        [
+          "Tetris Web",
+          "Jeux",
+          "Tetris playable in the browser",
+          G,
+          "2022-04-18",
+          2,
+          "JavaScript, HTML/CSS",
+        ],
+        [
+          "Snake",
+          "Jeux",
+          "Classic Snake in the terminal",
+          "local/games/snake",
+          "2021-09-15",
+          1,
+          "Python",
+        ],
+        [
+          "Image Classifier",
+          "IA/ML",
+          "Trained image classifier (CNN) + API",
+          G + " · local/img-clf",
+          "2024-02-14",
+          4,
+          "Python",
+        ],
+        [
+          "Chatbot RAG",
+          "IA/ML",
+          "Assistant that answers over your documents (RAG)",
+          G + " · local/rag-bot",
+          "2024-08-30",
+          4,
+          "Python",
+        ],
+        [
+          "Sentiment API",
+          "IA/ML, Web",
+          "Text sentiment analysis API",
+          "local/sentiment",
+          "2023-07-03",
+          3,
+          "Python",
+        ],
+        [
+          "Dotfiles",
+          "Outils",
+          "My automated terminal/editor config",
+          G,
+          "2022-01-10",
+          2,
+          "Shell",
+        ],
+        [
+          "Backup CLI",
+          "Outils",
+          "Encrypted incremental backup on the command line",
+          G + " · local/backup-cli",
+          "2023-11-11",
+          3,
+          "Go",
+        ],
+        [
+          "Data Pipeline",
+          "Outils, IA/ML",
+          "ETL: scrape, clean, load into a database",
+          "local/pipeline",
+          "2024-04-16",
+          4,
+          "Python, SQL",
+        ],
+        [
+          "Markdown to PDF",
+          "Outils",
+          "Converts Markdown notes into a styled PDF",
+          G,
+          "2023-03-27",
+          2,
+          "Python",
+        ],
+        [
+          "File Organizer",
+          "Outils",
+          "Auto-sorts a folder by type and date",
+          "local/organizer",
+          "2022-08-02",
+          1,
+          "Python",
+        ],
+        [
+          "Price Watcher",
+          "Scraping",
+          "Watches prices and alerts by email",
+          G + " · local/price-watch",
+          "2023-09-09",
+          3,
+          "Python",
+        ],
+        [
+          "News Aggregator",
+          "Scraping, Web",
+          "Aggregates RSS feeds into one feed",
+          "local/news",
+          "2022-11-20",
+          2,
+          "Node",
+        ],
+        [
+          "3D Portfolio",
+          "3D, Web",
+          "Interactive 3D scene (Three.js)",
+          G + " · local/three-folio",
+          "2024-10-05",
+          4,
+          "TypeScript",
+        ],
+        [
+          "Pixel Art Editor",
+          "Image",
+          "Pixel art editor in the browser",
+          G,
+          "2022-06-01",
+          2,
+          "JavaScript, HTML/CSS",
+        ],
+        [
+          "Logo Generator",
+          "Image",
+          "Generates logos from random shapes",
+          "local/logogen",
+          "2023-05-14",
+          2,
+          "Python",
+        ],
+        [
+          "Port Scanner",
+          "Hacking",
+          "Multithreaded network port scanner",
+          G + " · local/scanner",
+          "2023-01-08",
+          2,
+          "Python",
+        ],
+        [
+          "Password Vault",
+          "Hacking, Outils",
+          "Encrypted password manager (CLI)",
+          "local/vault",
+          "2024-06-20",
+          4,
+          "Rust",
+        ],
+        [
+          "Backtester",
+          "Trading",
+          "Strategy backtesting engine (proto -> v2 -> final)",
+          G + " · local/bt v1 -> v2 -> v3",
+          "2024-12-01",
+          5,
+          "Python",
+        ],
+        [
+          "Beat Machine",
+          "Audio",
+          "Drum machine with a 16-step sequencer",
+          G + " · local/beatbox",
+          "2024-03-12",
+          4,
+          "Python",
+        ],
+        [
+          "Discord Bot",
+          "Social, Outils",
+          "Moderation and mini-games bot for Discord",
+          G + " · local/discord-bot",
+          "2023-08-22",
+          3,
+          "Python, Node",
+        ],
+        [
+          "Algo exercises",
+          "Cours",
+          "A collection of algorithm exercises",
+          "local/algos",
+          "2021-10-01",
+          1,
+          "Python",
+        ],
+      ];
+      // Claude: set this to the REAL sum of stars across the person's GitHub repos.
+      const GHSTARS = 128;
+
+      // ---- generic engine below: do not modify ----
+      const CATC = {
+        Trading: "#6ea8ff",
+        Santé: "#7ee0a7",
+        Jeux: "#c08bff",
+        Audio: "#f06eb0",
+        "3D": "#5fd4d1",
+        Image: "#c9d64f",
+        Web: "#ffcf5c",
+        Mobile: "#ff8f6e",
+        "IA/ML": "#b5c7ff",
+        Scraping: "#8fd4ff",
+        Outils: "#9aa3b2",
+        Hacking: "#ff6e6e",
+        Social: "#ffd9a0",
+        Cours: "#8a93a2",
+        Divers: "#707a88",
+      };
+      const CATEMO = {
+        Trading: "📈",
+        Santé: "💪",
+        Jeux: "🎮",
+        Audio: "🎧",
+        "3D": "🧊",
+        Image: "🖼️",
+        Web: "🌐",
+        Mobile: "📱",
+        "IA/ML": "🧠",
+        Scraping: "🕷️",
+        Outils: "🔧",
+        Hacking: "💻",
+        Social: "📸",
+        Cours: "🎓",
+        Divers: "🎲",
+      };
+      const CATNAME = {
+        en: {
+          Trading: "Trading",
+          Santé: "Health",
+          Jeux: "Games",
+          Audio: "Audio",
+          "3D": "3D",
+          Image: "Image",
+          Web: "Web",
+          Mobile: "Mobile",
+          "IA/ML": "AI/ML",
+          Scraping: "Scraping",
+          Outils: "Tools",
+          Hacking: "Hacking",
+          Social: "Social",
+          Cours: "Learning",
+          Divers: "Misc",
+        },
+        fr: {
+          Trading: "Trading",
+          Santé: "Santé",
+          Jeux: "Jeux",
+          Audio: "Audio",
+          "3D": "3D",
+          Image: "Image",
+          Web: "Web",
+          Mobile: "Mobile",
+          "IA/ML": "IA/ML",
+          Scraping: "Scraping",
+          Outils: "Outils",
+          Hacking: "Hacking",
+          Social: "Social",
+          Cours: "Cours",
+          Divers: "Divers",
+        },
+      };
+      const LANGC = {
+        Python: "#6ea8ff",
+        JavaScript: "#ffcf5c",
+        React: "#5fd4d1",
+        TypeScript: "#4f8cff",
+        "HTML/CSS": "#ff8f6e",
+        Flutter: "#7ee0a7",
+        Kivy: "#59c98f",
+        PHP: "#c08bff",
+        Node: "#8ad46f",
+        SQL: "#b5c7ff",
+        Django: "#2fae8f",
+        "C++": "#ff9fb0",
+        Assembly: "#f06eb0",
+        Go: "#67d4e0",
+        Rust: "#ffa06e",
+        Java: "#f0a06e",
+        "C#": "#9d8cff",
+        Shell: "#89e0a0",
+      };
+      const LANGEMO = {
+        Python: "🐍",
+        JavaScript: "🟨",
+        React: "⚛️",
+        TypeScript: "🔷",
+        "HTML/CSS": "🎨",
+        Flutter: "🐦",
+        Kivy: "📲",
+        PHP: "🐘",
+        Node: "🟩",
+        SQL: "🗄️",
+        Django: "🎸",
+        "C++": "🔩",
+        Assembly: "⚙️",
+        Go: "🐹",
+        Rust: "🦀",
+        Java: "☕",
+        "C#": "🎯",
+        Shell: "🐚",
+      };
+
+      const PROMPT_EN = `You are my assistant to fill this HTML dashboard (index.html) that inventories my coding projects.
+First read the big "INSTRUCTIONS FOR CLAUDE" comment at the top of the file, then follow it.
+
+My project folders: (e.g. ~/dev, ~/Desktop/code, D:\\projects)
+My GitHub username: (e.g. my_handle, leave empty if none)
+
+Steps:
+1. Scan my folders: find real projects (package.json, index.html, main.py, manage.py,
+   pubspec.yaml, composer.json, go.mod, Cargo.toml). Read a file when a name is ambiguous.
+2. Fetch my GitHub repos (https://api.github.com/users/MY_HANDLE/repos?per_page=100) and sum the stars.
+3. Replace ONLY the "const P = [...]" array, the GHSTARS variable, and the date in the subtitle.
+   Do not change anything else.
+
+Rules:
+- 1 idea = 1 row. Merge variants and versions. Show the lineage in "where" with arrows: proto -> v2 -> final.
+- Include EVERYTHING, even a 10-line script.
+- Category AND language can be multiple (comma-separated). Category must be one of the internal keys.
+- Stars (1 to 5) = the amount of work to build it (not quality).
+- Mark published projects with the G marker in the "where" field.
+- NEVER use em dashes. Keyboard characters only.
+- Row format:
+  ["Idea name","Cat1, Cat2","What it does","where it lives (+G)","YYYY-MM-DD",3,"Lang1, Lang2"],
+
+Then save the file and open it in the browser.`;
+      const PROMPT_FR = `Tu es mon assistant pour remplir ce dashboard HTML (index.html) d'inventaire de mes projets de code.
+Lis d'abord le gros commentaire "INSTRUCTIONS POUR CLAUDE" en haut du fichier, puis suis-le.
+
+Mes dossiers de projets : (ex: ~/dev, ~/Bureau/code, D:\\projets)
+Mon pseudo GitHub : (ex: mon_pseudo, laisse vide si aucun)
+
+Etapes :
+1. Scanne mes dossiers : repere les vrais projets (package.json, index.html, main.py, manage.py,
+   pubspec.yaml, composer.json, go.mod, Cargo.toml). Lis un fichier quand le nom est ambigu.
+2. Recupere mes depots GitHub (https://api.github.com/users/MON_PSEUDO/repos?per_page=100) et additionne les etoiles.
+3. Remplace UNIQUEMENT le tableau "const P = [...]", la variable GHSTARS, et la date du sous-titre.
+   Ne touche a rien d'autre.
+
+Regles :
+- 1 idee = 1 ligne. Fusionne variantes et versions. Montre la gradation dans "ou ca vit" : proto -> v2 -> final.
+- Inclure TOUT, meme un script de 10 lignes.
+- Categorie ET langage peuvent etre multiples (virgules). La categorie doit etre une des cles internes.
+- Les etoiles (1 a 5) = la charge de travail pour realiser le projet (pas la qualite).
+- Marque les projets publies avec le marqueur G dans le champ "ou ca vit".
+- JAMAIS de tiret cadratin. Uniquement des caracteres du clavier.
+- Format d'une ligne :
+  ["Nom","Cat1, Cat2","Ce que ca fait","ou ca vit (+G)","AAAA-MM-JJ",3,"Lang1, Lang2"],
+
+Puis sauvegarde le fichier et ouvre-le dans le navigateur.`;
+
+      const T = {
+        en: {
+          htmlLang: "en",
+          title: "🗂️ CodeShelf: my coded ideas",
+          sub: '1 idea = 1 row. Variants grouped (see "Where it lives"). Stars = amount of work to build it. GitHub included (⭐). Click a column to sort.',
+          tpl: "🧩 <b>This is a template.</b> The data below is just a <b>sample</b> to show the look. Give this file to Claude with the prompt below and it will fill it with <b>your</b> real projects.",
+          promptsum:
+            "📋 Perfect prompt to give Claude (click to show and copy)",
+          copybtn: "📋 Copy the prompt",
+          copied: "✅ Copied!",
+          cath: "Ideas by category",
+          langh: "Ideas by language",
+          searchPh: '🔎 filter (name, keyword, "github"...)',
+          allCats: "All categories",
+          allLangs: "All languages",
+          az: "A→Z",
+          dateBtn: "Date ↓",
+          effort: "Effort ↓",
+          hIdea: "Idea",
+          hCat: "Category",
+          hLang: "Language",
+          hWhat: "What it does",
+          hWhere: "Where it lives",
+          hDate: "Date",
+          hEffort: "Effort",
+          cIdeas: "Distinct ideas",
+          cCats: "Categories",
+          cLangs: "Languages",
+          cGh: "Ideas on GitHub",
+          cStars: "⭐ GitHub stars (total)",
+          cBig: "Big effort (★4-5)",
+          radar: (a, b) =>
+            `What kind of dev I am: mostly ${a} & ${b} (click to collapse)`,
+          foot: (n, t) =>
+            `${n} ideas shown of ${t} total. ⭐ GitHub stars: ${GHSTARS}.`,
+          scripts: "Scripts/Hack",
+          prompt: PROMPT_EN,
+        },
+        fr: {
+          htmlLang: "fr",
+          title: "🗂️ CodeShelf : mes idées codées",
+          sub: '1 idée = 1 ligne. Variantes regroupées (voir "Où ça vit"). Étoiles = charge de travail pour réaliser le projet. GitHub inclus (⭐). Clique une colonne pour trier.',
+          tpl: "🧩 <b>Ceci est un template.</b> Les données ci-dessous sont des <b>exemples</b> pour montrer le rendu. Donne ce fichier à Claude avec le prompt ci-dessous et il le remplira avec <b>tes</b> vrais projets.",
+          promptsum:
+            "📋 Prompt parfait à donner à Claude (clique pour afficher et copier)",
+          copybtn: "📋 Copier le prompt",
+          copied: "✅ Copié !",
+          cath: "Idées par catégorie",
+          langh: "Idées par langage",
+          searchPh: '🔎 filtrer (nom, mot-clé, "github"...)',
+          allCats: "Toutes catégories",
+          allLangs: "Tous langages",
+          az: "A→Z",
+          dateBtn: "Date ↓",
+          effort: "Effort ↓",
+          hIdea: "Idée",
+          hCat: "Catégorie",
+          hLang: "Langage",
+          hWhat: "Ce que ça fait",
+          hWhere: "Où ça vit",
+          hDate: "Date",
+          hEffort: "Effort",
+          cIdeas: "Idées distinctes",
+          cCats: "Catégories",
+          cLangs: "Langages",
+          cGh: "Idées sur GitHub",
+          cStars: "⭐ étoiles GitHub (total)",
+          cBig: "Gros effort (★4-5)",
+          radar: (a, b) =>
+            `Quel type de dev je suis : surtout ${a} & ${b} (clique pour replier)`,
+          foot: (n, t) =>
+            `${n} idées affichées sur ${t} au total. ⭐ étoiles GitHub : ${GHSTARS}.`,
+          scripts: "Scripts/Hack",
+          prompt: PROMPT_FR,
+        },
+      };
+
+      function chip(txt, color, emo) {
+        const bg = color + "22";
+        return `<span class="chip" style="color:${color};background:${bg};border:1px solid ${color}44">${emo ? emo + " " : ""}${txt}</span>`;
+      }
+      function langsOf(p) {
+        return p[6]
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      function catsOf(p) {
+        return p[1]
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      let lang = "en";
+      function cn(k) {
+        return CATNAME[lang][k] || k;
+      }
+      function L() {
+        return T[lang];
+      }
+
+      const total = P.length,
+        ghCount = P.filter((p) => /\bGH\b/.test(p[3])).length;
+
+      function renderCards() {
+        const t = L();
+        document.getElementById("cards").innerHTML = `
+ <div class="card"><div class="n">${total}</div><div class="l">${t.cIdeas}</div></div>
+ <div class="card"><div class="n">${new Set(P.flatMap(catsOf)).size}</div><div class="l">${t.cCats}</div></div>
+ <div class="card"><div class="n">${new Set(P.flatMap(langsOf)).size}</div><div class="l">${t.cLangs}</div></div>
+ <div class="card"><div class="n">${ghCount}</div><div class="l">${t.cGh}</div></div>
+ <div class="card"><div class="n gh">${GHSTARS}</div><div class="l">${t.cStars}</div></div>
+ <div class="card"><div class="n">${P.filter((p) => p[5] >= 4).length}</div><div class="l">${t.cBig}</div></div>`;
+      }
+
+      function barChart(el, data, colorMap, nameFn) {
+        const mx = Math.max(...data.map((d) => d[1]), 1);
+        document.getElementById(el).innerHTML = data
+          .map((d) => {
+            const c = (colorMap && colorMap[d[0]]) || "#6ea8ff";
+            const label = nameFn ? nameFn(d[0]) : d[0];
+            return `<div class="bar-row"><div class="cap">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max((d[1] / mx) * 100, 6)}%;background:${c}">${d[1]}</div></div></div>`;
+          })
+          .join("");
+      }
+      function renderCharts() {
+        const cat = {};
+        P.forEach((p) =>
+          catsOf(p).forEach((c) => (cat[c] = (cat[c] || 0) + 1)),
+        );
+        barChart(
+          "catChart",
+          Object.entries(cat).sort((a, b) => b[1] - a[1]),
+          CATC,
+          cn,
+        );
+        const la = {};
+        P.forEach((p) => langsOf(p).forEach((l) => (la[l] = (la[l] || 0) + 1)));
+        barChart(
+          "langChart",
+          Object.entries(la).sort((a, b) => b[1] - a[1]),
+          LANGC,
+        );
+      }
+
+      const AXES = [
+        ["Web"],
+        ["Jeux"],
+        ["Trading"],
+        ["IA/ML"],
+        ["Audio"],
+        ["3D"],
+        ["Image"],
+        ["Mobile"],
+        ["Outils"],
+        ["Scraping", "Hacking", "Divers"],
+      ];
+      function renderRadar() {
+        const svg = document.getElementById("radar");
+        const cx = 240,
+          cy = 195,
+          R = 140,
+          N = AXES.length;
+        const vals = AXES.map((a) =>
+          P.filter((p) => catsOf(p).some((c) => a.includes(c))).reduce(
+            (s, p) => s + p[5],
+            0,
+          ),
+        );
+        const labels = AXES.map((a) => (a.length > 1 ? L().scripts : cn(a[0])));
+        const mx = Math.max(...vals, 1);
+        function pt(i, r) {
+          const ang = -Math.PI / 2 + (i * 2 * Math.PI) / N;
+          return [cx + r * Math.cos(ang), cy + r * Math.sin(ang)];
+        }
+        let s = "";
+        for (let g = 1; g <= 4; g++) {
+          let ring = "";
+          for (let i = 0; i < N; i++) {
+            const [x, y] = pt(i, (R * g) / 4);
+            ring += (i ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+          }
+          s += `<path d="${ring}Z" fill="none" stroke="#2a2f3a" stroke-width="1"/>`;
+        }
+        for (let i = 0; i < N; i++) {
+          const [x, y] = pt(i, R);
+          s += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#2a2f3a"/>`;
+        }
+        let poly = "";
+        vals.forEach((v, i) => {
+          const [x, y] = pt(i, R * (v / mx || 0));
+          poly += (i ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+        });
+        s += `<path d="${poly}Z" fill="#6ea8ff33" stroke="#6ea8ff" stroke-width="2"/>`;
+        vals.forEach((v, i) => {
+          const [x, y] = pt(i, R * (v / mx || 0));
+          s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="#6ea8ff"/>`;
+        });
+        labels.forEach((lb, i) => {
+          let [x, y] = pt(i, R + 22);
+          const anc =
+            Math.abs(x - cx) < 10 ? "middle" : x < cx ? "end" : "start";
+          s += `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" fill="#9aa3b2" font-size="11" text-anchor="${anc}" dominant-baseline="middle">${lb} (${vals[i]})</text>`;
+        });
+        svg.innerHTML = s;
+        const top = labels
+          .map((lb, i) => [lb, vals[i]])
+          .sort((a, b) => b[1] - a[1]);
+        document.getElementById("radarTitle").textContent = L().radar(
+          top[0][0],
+          top[1][0],
+        );
+      }
+
+      const fcat = document.getElementById("fcat"),
+        flang = document.getElementById("flang");
+      function buildSelects() {
+        const cv = fcat.value,
+          lv = flang.value,
+          t = L();
+        fcat.innerHTML = `<option value="">${t.allCats}</option>`;
+        [...new Set(P.flatMap(catsOf))]
+          .sort((a, b) => cn(a).localeCompare(cn(b)))
+          .forEach((c) =>
+            fcat.insertAdjacentHTML(
+              "beforeend",
+              `<option value="${c}">${CATEMO[c] || ""} ${cn(c)}</option>`,
+            ),
+          );
+        flang.innerHTML = `<option value="">${t.allLangs}</option>`;
+        [...new Set(P.flatMap(langsOf))]
+          .sort()
+          .forEach((l) =>
+            flang.insertAdjacentHTML(
+              "beforeend",
+              `<option value="${l}">${LANGEMO[l] || ""} ${l}</option>`,
+            ),
+          );
+        fcat.value = cv;
+        flang.value = lv;
+      }
+
+      function stars(n) {
+        return (
+          "★".repeat(n) +
+          '<span style="color:#2a2f3a">' +
+          "★".repeat(5 - n) +
+          "</span>"
+        );
+      }
+      function esc(s) {
+        return s.replace(/\bGH\b/g, '<span class="gh">⭐ GitHub</span>');
+      }
+      function draw(rows) {
+        document.getElementById("rows").innerHTML = rows
+          .map(
+            (p) =>
+              `<tr><td class="nm">${p[0]}</td><td>${catsOf(p)
+                .map((c) => chip(cn(c), CATC[c] || "#9aa3b2", CATEMO[c]))
+                .join(" ")}</td><td>${langsOf(p)
+                .map((l) => chip(l, LANGC[l] || "#9aa3b2", LANGEMO[l]))
+                .join(
+                  " ",
+                )}</td><td>${p[2]}</td><td class="where">${esc(p[3])}</td><td class="date">${p[4]}</td><td class="stars" title="${p[5]}/5 effort">${stars(p[5])}</td></tr>`,
+          )
+          .join("");
+      }
+
+      let cur = [...P],
+        lastK = 4,
+        lastDesc = true;
+      function sortBy(k, desc, keep) {
+        if (!keep) {
+          lastK = k;
+          lastDesc = desc;
+        }
+        cur.sort((a, b) => {
+          let r;
+          if (k === 5) r = a[5] - b[5];
+          else
+            r = String(a[k]).localeCompare(String(b[k]), "fr", {
+              numeric: true,
+            });
+          return desc ? -r : r;
+        });
+        draw(cur);
+      }
+      function apply() {
+        const v = document.getElementById("q").value.toLowerCase(),
+          c = fcat.value,
+          l = flang.value;
+        cur = P.filter(
+          (p) =>
+            (!c || catsOf(p).includes(c)) &&
+            (!l || langsOf(p).includes(l)) &&
+            (!v || p.join(" ").toLowerCase().includes(v)),
+        );
+        sortBy(lastK, lastDesc, true);
+        document.getElementById("foot").textContent = L().foot(
+          cur.length,
+          total,
+        );
+      }
+
+      function applyLang(l) {
+        lang = l;
+        const t = L();
+        document.documentElement.lang = t.htmlLang;
+        document.getElementById("t_title").textContent = t.title;
+        document.getElementById("t_sub").textContent = t.sub;
+        document.getElementById("t_tpl").innerHTML = t.tpl;
+        document.getElementById("t_promptsum").textContent = t.promptsum;
+        document.getElementById("t_copybtn").textContent = t.copybtn;
+        document.getElementById("promptBox").textContent = t.prompt;
+        document.getElementById("t_cath").textContent = t.cath;
+        document.getElementById("t_langh").textContent = t.langh;
+        document.getElementById("q").placeholder = t.searchPh;
+        document.getElementById("t_az").textContent = t.az;
+        document.getElementById("t_date").textContent = t.dateBtn;
+        document.getElementById("t_effort").textContent = t.effort;
+        document.getElementById("t_hidea").textContent = t.hIdea;
+        document.getElementById("t_hcat").textContent = t.hCat;
+        document.getElementById("t_hlang").textContent = t.hLang;
+        document.getElementById("t_hwhat").textContent = t.hWhat;
+        document.getElementById("t_hwhere").textContent = t.hWhere;
+        document.getElementById("t_hdate").textContent = t.hDate;
+        document.getElementById("t_heffort").textContent = t.hEffort;
+        document
+          .querySelectorAll(".langsw button")
+          .forEach((b) => b.classList.toggle("on", b.dataset.l === l));
+        renderCards();
+        renderCharts();
+        renderRadar();
+        buildSelects();
+        apply();
+      }
+
+      function copyPrompt() {
+        const txt = document.getElementById("promptBox").textContent;
+        navigator.clipboard
+          .writeText(txt)
+          .then(() => {
+            const b = document.getElementById("t_copybtn");
+            b.textContent = L().copied;
+            setTimeout(() => (b.textContent = L().copybtn), 1500);
+          })
+          .catch(() => {});
+      }
+
+      document.querySelectorAll("#tbl th").forEach((th) =>
+        th.addEventListener("click", () => {
+          const k = +th.dataset.k;
+          const desc = k === lastK ? !lastDesc : k === 4 || k === 5;
+          sortBy(k, desc);
+        }),
+      );
+      document.querySelectorAll(".toolbar .btn").forEach((b) =>
+        b.addEventListener("click", () => {
+          document
+            .querySelectorAll(".toolbar .btn")
+            .forEach((x) => x.classList.remove("on"));
+          b.classList.add("on");
+          const k = +b.dataset.k;
+          sortBy(k, k === 4 || k === 5);
+        }),
+      );
+      document.getElementById("q").addEventListener("input", apply);
+      fcat.addEventListener("change", apply);
+      flang.addEventListener("change", apply);
+      document
+        .querySelectorAll(".langsw button")
+        .forEach((b) =>
+          b.addEventListener("click", () => applyLang(b.dataset.l)),
+        );
+
+      applyLang("en");
+    </script>
+  </body>
+</html>
