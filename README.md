@@ -1,6 +1,7 @@
 <div align="center">
 
 <img src="topinv.png" width="800" alt="CodeShelf: stat cards, ideas by category and ideas by language" />
+<img src="botinv.png" width="800" alt="CodeShelf: developer radar, language filter, and the project table" />
 
 # 🗂️ CodeShelf
 
@@ -137,10 +138,6 @@ The stars feed the **"Big effort (★4-5)"** card and **weight the radar**: a 5-
 ---
 
 ## What the Dashboard Shows
-
-<div align="center">
-<img src="botinv.png" width="800" alt="CodeShelf: developer radar, language filter, and the project table" />
-</div>
 
 ### Stat cards
 
