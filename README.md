@@ -5,7 +5,7 @@
 
 # 🗂️ CodeShelf
 
-**Every project you ever coded, on one shelf: an inventory dashboard that shows how much you built, what kind of developer you are, and how hard you worked.**  
+**Every project you ever coded, on one shelf: an inventory dashboard that shows how much you built, what kind of developer you are, and how hard you worked.**
 One HTML file. Vanilla JavaScript. Filled for you by Claude, which digs through your hard drive and your GitHub.
 
 [![HTML5](https://img.shields.io/badge/HTML5-single%20file-E34F26?style=flat-square&logo=html5&logoColor=white)](index.html)
